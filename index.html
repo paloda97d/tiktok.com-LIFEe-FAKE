@@ -41,7 +41,6 @@
         100% { transform: scale(1); opacity: 1; }
     }
     .animate-gift { animation: giftPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards; }
-    /* Corrección de espejo para que la cámara frontal se vea natural */
     #cameraStream {
         transform: scaleX(-1);
     }
@@ -57,9 +56,9 @@
         <video id="cameraStream" autoplay playsinline muted class="h-full w-full object-cover"></video>
     </div>
 
-    <!-- Barra Superior Exacta TikTok (Sin botón "Unirse") -->
+    <!-- Barra Superior Exacta TikTok -->
     <div class="relative z-10 pt-12 px-3 flex justify-between items-center bg-gradient-to-b from-black/70 via-black/20 to-transparent pb-3">
-        <!-- Izquierda: Perfil, Nombre y Likes (Sin botón unirse) -->
+        <!-- Izquierda: Perfil, Nombre y Likes -->
         <div class="flex items-center space-x-2">
             <div class="flex items-center bg-black/40 backdrop-blur-md rounded-full p-1 pr-3 border border-white/10 space-x-2">
                 <div class="w-8 h-8 rounded-full overflow-hidden border border-white/20">
@@ -98,13 +97,13 @@
         </div>
     </div>
 
-    <!-- Contenedor de Regalos Animados (Lado Izquierdo) -->
+    <!-- Contenedor de Regalos Animados -->
     <div id="giftContainer" class="absolute top-28 left-3 z-20 space-y-2 pointer-events-none w-72"></div>
 
-    <!-- Contenedor de Corazones Flotantes (Lado Derecho Inferior) -->
+    <!-- Contenedor de Corazones Flotantes -->
     <div id="heartsContainer" class="absolute inset-0 z-10 pointer-events-none overflow-hidden"></div>
 
-    <!-- Interfaz Inferior (Chat Estilo TikTok Real + Barra de Comentarios) -->
+    <!-- Interfaz Inferior (Chat + Barra de Comentarios) -->
     <div class="relative z-10 p-3 flex flex-col space-y-2.5 bg-gradient-to-t from-black/90 via-black/40 to-transparent pb-6">
         <!-- Chat Flotante -->
         <div id="chatContainer" class="h-48 overflow-y-auto no-scrollbar flex flex-col space-y-2">
@@ -137,7 +136,7 @@
         </div>
     </div>
 
-    <!-- Modal de Configuración Avanzada -->
+    <!-- Modal de Configuración Avanzada con Selector de Escenario -->
     <div id="settingsModal" class="absolute inset-0 z-50 bg-black/80 backdrop-blur-lg hidden flex items-center justify-center p-5">
         <div class="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl text-white">
             <div class="flex justify-between items-center border-b border-white/10 pb-3">
@@ -156,6 +155,16 @@
                 <input type="text" id="inputUsername" value="Yanina" class="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
             </div>
 
+            <!-- Selector de Escenario / Ambiente -->
+            <div class="space-y-1">
+                <label class="text-xs text-gray-400 font-medium">Ambiente de los Comentarios:</label>
+                <select id="selectVibe" class="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
+                    <option value="standard">🏠 Estándar / Charla general</option>
+                    <option value="park">🌳 Parque / Aire Libre (Clima y naturaleza)</option>
+                    <option value="festival">🔊 Festival de Techno / Música (Fiesta y DJ)</option>
+                </select>
+            </div>
+
             <!-- Rango de Espectadores -->
             <div class="grid grid-cols-2 gap-2">
                 <div class="space-y-1">
@@ -168,12 +177,12 @@
                 </div>
             </div>
 
-            <!-- Botón Encender / Apagar Live -->
+            <!-- Botón Guardar / Finalizar -->
             <div class="pt-2 flex space-x-2">
                 <button onclick="applySettings()" class="flex-1 bg-pink-600 hover:bg-pink-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg transition">
                     Guardar y Aplicar
                 </button>
-                <button onclick="toggleLiveState()" id="liveStateBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-lg transition">
+                <button onclick="toggleLiveState()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-lg transition">
                     Finalizar Live
                 </button>
             </div>
@@ -204,8 +213,9 @@
         let currentViewers = 71;
         let totalDiamondsCount = 1285;
         let likeCountNum = 129600;
+        let currentVibe = "standard";
 
-        // Inicializar Cámara en Tiempo Real con control de espejo
+        // Inicializar Cámara en Tiempo Real
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -238,7 +248,7 @@
             modal.classList.toggle('hidden');
         }
 
-        // Aplicar Configuración de Ajustes
+        // Aplicar Configuración de Ajustes y Escenario
         function applySettings() {
             const usernameInput = document.getElementById('inputUsername').value;
             document.getElementById('displayUsername').innerText = usernameInput || "Yanina";
@@ -246,6 +256,8 @@
             minViewers = parseInt(document.getElementById('inputMinViewers').value) || 10;
             maxViewers = parseInt(document.getElementById('inputMaxViewers').value) || 1000;
             if(currentViewers < minViewers) currentViewers = minViewers;
+
+            currentVibe = document.getElementById('selectVibe').value;
             
             toggleSettingsModal();
         }
@@ -266,14 +278,26 @@
             endLive();
         }
 
-        // Comentarios variados, positivos, coquetos, chistosos (Sin ninguna localidad)
+        // Listas de comentarios según el ambiente seleccionado
         const usernames = ["carlos_fx", "andrea_beauty", "pedro.picapiedra", "juancho_10", "sofia_fit", "rorro_x", "claudia_chile", "ignacio_sk8", "el fantástico", "FUSER", "matias_pro", "vale_love", "diego_rc", "camila_99"];
-        const comments = [
+        
+        const commentsStandard = [
             "Holaa hermosa 😍", "Jajaja no puedo más con esto 😂", "Qué linda sonrisa tienes ✨", 
             "Hermoso bro 🔥", "10/10 tu buena vibra", "A darle con todo hoy 💪", "Me encantas ❤️", 
             "Holaa wapa 👋", "Wenaa sipo ✨", "🔥🔥🔥", "Jajaja me haces el día 😂", 
-            "Tremendo directo 👏", "😍😍", "Salu2 rey 👑", "Estás radiante hoy ✨", 
-            "Jajaja qué buena talla 😂", "Qué guapa te ves hoy 💕", "Me das paz verte en vivo 🌸"
+            "Tremendo directo 👏", "😍😍", "Salu2 rey 👑", "Estás radiante hoy ✨"
+        ];
+
+        const commentsPark = [
+            "Qué rico clima para pasear 🌳", "Disfruta mucho del aire libre ☀️", "Hermoso paisaje donde estás 🌿", 
+            "Qué paz se ve por ahí 🍃", "Buenísimo tomar un poco de sol 😎", "Qué lindo lugar para despejarse ✨", 
+            "Aprovecha harto el parque 🌳", "Hermoso día para pasear 😍"
+        ];
+
+        const commentsFestival = [
+            "Uff temazo el que está sonando 🔊🔥", "¡Qué buena fiesta! ¿Quién es el DJ? 🎧", "¡A darle con todo al techno! ⚡", 
+            "Puro bajo pesado hermano 🔊🚀", "¡Qué energía se ve en el festival! 🔥", "Tirate unos pasos de baile 💃", 
+            "¡Tremendo evento! Disfruta al máximo 🌌", "¡Se ve increíble el escenario y las luces! ✨🎶"
         ];
 
         const chatContainer = document.getElementById('chatContainer');
@@ -291,7 +315,11 @@
                 const level = Math.floor(Math.random() * 30) + 1;
                 div.innerHTML = `<span class="text-blue-300 font-semibold">◆ ${level} ${user} se unió</span>`;
             } else {
-                const text = comments[Math.floor(Math.random() * comments.length)];
+                let activeList = commentsStandard;
+                if (currentVibe === 'park') activeList = commentsPark;
+                if (currentVibe === 'festival') activeList = commentsFestival;
+
+                const text = activeList[Math.floor(Math.random() * activeList.length)];
                 const hasLevel = Math.random() < 0.4;
                 const levelBadge = hasLevel ? `<span class="bg-blue-600 text-white px-1 rounded text-[9px] font-bold mr-1">◆ ${Math.floor(Math.random() * 25) + 1}</span>` : '';
                 
