@@ -41,6 +41,13 @@
         100% { transform: scale(1); opacity: 1; }
     }
     .animate-gift { animation: giftPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards; }
+    /* Corrección de espejo para que la cámara frontal se vea natural */
+    #cameraStream {
+        transform: scaleX(-1);
+    }
+    #cameraStream.rear-camera {
+        transform: scaleX(1);
+    }
 </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between relative overflow-hidden bg-black">
@@ -50,9 +57,9 @@
         <video id="cameraStream" autoplay playsinline muted class="h-full w-full object-cover"></video>
     </div>
 
-    <!-- Barra Superior Exacta TikTok (Sin Ligas ni Trofeos) -->
+    <!-- Barra Superior Exacta TikTok (Sin botón "Unirse") -->
     <div class="relative z-10 pt-12 px-3 flex justify-between items-center bg-gradient-to-b from-black/70 via-black/20 to-transparent pb-3">
-        <!-- Izquierda: Perfil, Nombre, Likes y Botón Unirse -->
+        <!-- Izquierda: Perfil, Nombre y Likes (Sin botón unirse) -->
         <div class="flex items-center space-x-2">
             <div class="flex items-center bg-black/40 backdrop-blur-md rounded-full p-1 pr-3 border border-white/10 space-x-2">
                 <div class="w-8 h-8 rounded-full overflow-hidden border border-white/20">
@@ -68,11 +75,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Botón Naranja Unirse -->
-            <button class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md flex items-center space-x-1">
-                <i class="fa-solid fa-user-plus text-[10px]"></i>
-                <span>Unirse</span>
-            </button>
         </div>
 
         <!-- Derecha: Espectadores, Configuración y X -->
@@ -203,14 +205,21 @@
         let totalDiamondsCount = 1285;
         let likeCountNum = 129600;
 
-        // Inicializar Cámara Frontal del iPhone en Tiempo Real
+        // Inicializar Cámara en Tiempo Real con control de espejo
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: currentFacingMode }, 
                     audio: false 
                 });
-                document.getElementById('cameraStream').srcObject = stream;
+                const videoElem = document.getElementById('cameraStream');
+                videoElem.srcObject = stream;
+                
+                if (currentFacingMode === "user") {
+                    videoElem.classList.remove('rear-camera');
+                } else {
+                    videoElem.classList.add('rear-camera');
+                }
             } catch (error) {
                 console.error("Error al acceder a la cámara:", error);
             }
@@ -244,7 +253,6 @@
         // Finalizar Transmisión
         function endLive() {
             isLiveActive = false;
-            // Detener cámara
             const videoElem = document.getElementById('cameraStream');
             if(videoElem.srcObject) {
                 videoElem.srcObject.getTracks().forEach(track => track.stop());
@@ -258,9 +266,15 @@
             endLive();
         }
 
-        // Datos del Chat y Bots
-        const usernames = ["carlos_fx", "andrea_beauty", "pedro.picapiedra", "juancho_10", "sofia_fit", "rorro_x", "claudia_chile", "ignacio_sk8", "el fantástico", "FUSER"];
-        const comments = ["Hola", "bandido de Ana Barbara cumbia", "roxett habla el corazón esa canción", "Jajaja csm 😂", "Saludos desde Maipú!", "Hermoso bro 🔥", "10/10", "A darle con todo 💪", "Me encantas ❤️", "Holaa wapa 👋", "Wenaa sipo ✨", "🔥🔥🔥", "Jajaja wena", "Tremendo directo 👏", "😍😍", "Salu2 rey 👑"];
+        // Comentarios variados, positivos, coquetos, chistosos (Sin ninguna localidad)
+        const usernames = ["carlos_fx", "andrea_beauty", "pedro.picapiedra", "juancho_10", "sofia_fit", "rorro_x", "claudia_chile", "ignacio_sk8", "el fantástico", "FUSER", "matias_pro", "vale_love", "diego_rc", "camila_99"];
+        const comments = [
+            "Holaa hermosa 😍", "Jajaja no puedo más con esto 😂", "Qué linda sonrisa tienes ✨", 
+            "Hermoso bro 🔥", "10/10 tu buena vibra", "A darle con todo hoy 💪", "Me encantas ❤️", 
+            "Holaa wapa 👋", "Wenaa sipo ✨", "🔥🔥🔥", "Jajaja me haces el día 😂", 
+            "Tremendo directo 👏", "😍😍", "Salu2 rey 👑", "Estás radiante hoy ✨", 
+            "Jajaja qué buena talla 😂", "Qué guapa te ves hoy 💕", "Me das paz verte en vivo 🌸"
+        ];
 
         const chatContainer = document.getElementById('chatContainer');
         const viewerCountElem = document.getElementById('viewerCount');
@@ -348,7 +362,7 @@
             sendHeart();
         }
 
-        // Intervalos automáticos ajustados al rango configurado
+        // Intervalos automáticos
         setInterval(addComment, 1800);
         setInterval(() => {
             if(Math.random() > 0.35) triggerGift();
