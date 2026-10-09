@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>TikTok Fake Live Studio</title>
+<title>TikTok Live</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -18,97 +18,128 @@
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-in { animation: slideIn 0.25s ease-out forwards; }
+    @keyframes giftPopup {
+        0% { transform: scale(0.5); opacity: 0; }
+        60% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-gift { animation: giftPopup 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 </style>
 </head>
-<body class="h-screen w-screen flex flex-col justify-between relative">
+<body class="h-screen w-screen flex flex-col justify-between relative overflow-hidden bg-black">
 
-    <!-- Cámara en Tiempo Real (Fondo) -->
+    <!-- Cámara en Tiempo Real (Fondo de Pantalla Completa) -->
     <div class="absolute inset-0 z-0 bg-black overflow-hidden flex items-center justify-center">
         <video id="cameraStream" autoplay playsinline muted class="h-full w-full object-cover transform -scale-x-100"></video>
     </div>
 
-    <!-- Interfaz Superior (Stats y Botones) -->
-    <div class="relative z-10 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
-        <div class="flex items-center bg-black/40 backdrop-blur-md rounded-full px-3 py-1 border border-white/10">
-            <div class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-xs font-bold mr-2 overflow-hidden">
-                <i class="fa-solid fa-user text-white"></i>
-            </div>
-            <div class="text-xs">
-                <p class="font-bold">Tu_Usuario</p>
-                <div class="flex items-center text-[10px] text-gray-300">
-                    <span class="bg-red-600 rounded-full w-2 h-2 inline-block mr-1 animate-pulse"></span>
-                    <span id="viewerCount">1,425</span> espectadores
+    <!-- Interfaz Superior (Perfil, Diamantes y Espectadores estilo TikTok) -->
+    <div class="relative z-10 pt-10 px-3 flex justify-between items-center bg-gradient-to-b from-black/80 via-black/30 to-transparent pb-4">
+        <!-- Izquierda: Perfil y Seguir -->
+        <div class="flex items-center bg-black/40 backdrop-blur-md rounded-full p-1 pr-3 border border-white/10 space-x-2">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500 p-0.5 flex items-center justify-center overflow-hidden">
+                <div class="w-full h-full bg-black rounded-full flex items-center justify-center text-xs font-bold">
+                    <i class="fa-solid fa-user text-white text-[10px]"></i>
                 </div>
             </div>
+            <div class="text-xs">
+                <p class="font-bold text-white leading-tight">Tu_Usuario</p>
+                <p class="text-[10px] text-gray-300 leading-tight">1.2M</p>
+            </div>
+            <button class="bg-[#fe2c55] text-white text-[11px] font-bold px-2.5 py-1 rounded-full ml-1">Seguir</button>
         </div>
+
+        <!-- Derecha: Espectadores y Botón Salir -->
         <div class="flex items-center space-x-2">
-            <button onclick="toggleCamera()" class="bg-black/40 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-semibold border border-white/10">
-                <i class="fa-solid fa-camera-rotate mr-1"></i> Cámara
+            <!-- Espectadores en línea -->
+            <div class="flex items-center space-x-1 bg-black/40 backdrop-blur-md rounded-full px-3 py-1 border border-white/10 text-xs">
+                <div class="flex -space-x-1.5 overflow-hidden mr-1">
+                    <div class="inline-block h-4 w-4 rounded-full ring-2 ring-black bg-pink-500 text-[8px] flex items-center justify-center font-bold">A</div>
+                    <div class="inline-block h-4 w-4 rounded-full ring-2 ring-black bg-blue-500 text-[8px] flex items-center justify-center font-bold">J</div>
+                </div>
+                <span id="viewerCount" class="font-semibold">1,425</span>
+            </div>
+            <!-- Botón cerrar (X) -->
+            <button onclick="location.reload()" class="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white text-xs">
+                <i class="fa-solid fa-xmark"></i>
             </button>
-            <button class="bg-pink-600 text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg">En vivo</button>
         </div>
     </div>
 
-    <!-- Contenedor de Regalos / Donaciones (Arriba a la izquierda) -->
-    <div id="giftContainer" class="absolute top-20 left-4 z-20 space-y-2 pointer-events-none"></div>
+    <!-- Barra de Diamantes / Ranking Superior (Bajo el perfil) -->
+    <div class="relative z-10 px-3 flex items-center space-x-2">
+        <div class="bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-2.5 py-0.5 text-[11px] flex items-center space-x-1 text-yellow-400 font-bold">
+            <i class="fa-solid fa-gem text-xs"></i>
+            <span id="diamondCount">12,850</span>
+        </div>
+        <div class="bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-2.5 py-0.5 text-[11px] text-gray-200 flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            <span>TOP 4</span>
+        </div>
+    </div>
 
-    <!-- Interfaz Inferior (Chat y Comentarios de Bots) -->
-    <div class="relative z-10 p-4 flex flex-col space-y-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-        <div id="chatContainer" class="h-48 overflow-y-auto no-scrollbar flex flex-col space-y-2 mask-image">
-            <div class="bg-black/40 backdrop-blur-sm self-start rounded-2xl px-3 py-1.5 text-xs max-w-[85%] border border-white/5">
-                <span class="text-yellow-400 font-semibold">TikTok Live:</span> ¡Bienvenido a tu transmisión! Los espectadores bots comenzarán a unirse al iniciar el live.
+    <!-- Contenedor de Regalos Grandes / Animaciones en Vivo (Centro-Izquierda) -->
+    <div id="giftContainer" class="absolute top-36 left-3 z-20 space-y-2.5 pointer-events-none w-72"></div>
+
+    <!-- Interfaz Inferior (Chat Estilo TikTok con Comentarios y Emojis) -->
+    <div class="relative z-10 p-3 flex flex-col space-y-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent pb-6">
+        <!-- Chat flotante -->
+        <div id="chatContainer" class="h-52 overflow-y-auto no-scrollbar flex flex-col space-y-2 mask-image">
+            <div class="bg-black/40 backdrop-blur-sm self-start rounded-xl px-2.5 py-1 text-xs max-w-[90%] border border-white/5">
+                <span class="text-yellow-400 font-semibold">TikTok Live:</span> ¡Bienvenido a tu transmisión! Los espectadores comenzaron a unirse. 🔴
             </div>
         </div>
 
-        <div class="flex items-center space-x-2 pt-2">
-            <div class="bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex-1 px-4 py-2.5 text-xs text-gray-400 flex items-center justify-between">
-                <span>Comentar...</span>
-                <i class="fa-regular fa-comment text-gray-400"></i>
+        <!-- Barra de Controles Inferior (Comentar, Regalos, Multiguest, etc.) -->
+        <div class="flex items-center space-x-2 pt-1">
+            <div class="bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex-1 px-4 py-2.5 text-xs text-gray-300 flex items-center justify-between">
+                <span class="text-gray-400">Añade un comentario...</span>
+                <i class="fa-regular fa-face-smile text-gray-300 text-sm"></i>
             </div>
-            <button onclick="triggerGift()" class="bg-gradient-to-tr from-yellow-500 to-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
-                <i class="fa-solid fa-gift text-sm"></i>
+            <!-- Botón Multiguest / Efectos -->
+            <button class="bg-black/60 backdrop-blur-md border border-white/10 text-white w-10 h-10 rounded-full flex items-center justify-center text-sm shadow-md">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+            <!-- Botón de Regalos (Caja sorpresas TikTok) -->
+            <button onclick="triggerGift()" class="bg-gradient-to-tr from-pink-600 via-purple-600 to-indigo-600 text-white w-11 h-11 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
+                <i class="fa-solid fa-gift text-base"></i>
             </button>
         </div>
     </div>
 
     <script>
-        // Inicializar Cámara en el iPhone / Navegador
+        // Inicializar Cámara Frontal del iPhone en Tiempo Real
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "user" }, 
                     audio: false 
                 });
-                const videoElement = document.getElementById('cameraStream');
-                videoElement.srcObject = stream;
+                document.getElementById('cameraStream').srcObject = stream;
             } catch (error) {
                 console.error("Error al acceder a la cámara:", error);
                 alert("Por favor, permite el acceso a la cámara en los ajustes de tu navegador.");
             }
         }
-
-        let frontCamera = true;
-        async function toggleCamera() {
-            frontCamera = !frontCamera;
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: frontCamera ? "user" : "environment" }, 
-                    audio: false 
-                });
-                document.getElementById('cameraStream').srcObject = stream;
-            } catch (e) {
-                console.log("No se pudo cambiar la cámara");
-            }
-        }
-
         initCamera();
 
-        // Sistema de Chats y Bots Automáticos
-        const usernames = ["Carlos_G", "Andrea_Styl", "Pedro_Picapiedra", "Juancho_10", "Sofía_Fit", "Mauricio_99", "Vale_Cat", "Rorro_X"];
+        // Datos realistas de espectadores de TikTok (Comentarios cortos y emojis)
+        const usernames = [
+            "carlos_fx", "andrea_beauty", "pedro.picapiedra", "juancho_10", 
+            "sofia_fit", "mauricio_99", "vale_cat", "rorro_x", "claudia_chile", 
+            "ignacio_sk8", "stefany_94", "pancho_villa", "tania_oficial", "gonzalo_pro"
+        ];
+        
         const comments = [
-            "Jajaja me encanta 😂", "Saludos desde Maipú!", "Hermosa transmisión ✨", 
-            "Primera vez que veo en vivo 😍", "Pon música de techno por favor 🔊", 
-            "¿De dónde eres?", "Holaa hermosa!", "Tremendo directo 🔥", "Estás muy atenta hoy"
+            "Holaa! hermosa 😍", "Jajaja csm 😂", "Saludos desde Maipú!", "Hermoso bro 🔥", 
+            "10/10", "A darle con todo 💪", "Me encantas ❤️", "Holaa wapa 👋", 
+            "Wenaa sipo ✨", "🔥🔥🔥", "Jajaja wena", "Tremendo directo 👏", 
+            "Saludos desde Stgo", "😍😍", "Jajaja wtf 😂", "Salu2 rey 👑"
         ];
 
         const chatContainer = document.getElementById('chatContainer');
@@ -120,55 +151,68 @@
             const text = comments[Math.floor(Math.random() * comments.length)];
             
             const div = document.createElement('div');
-            div.className = "bg-black/40 backdrop-blur-sm self-start rounded-2xl px-3 py-1.5 text-xs max-w-[85%] border border-white/5 animate-fade-in";
-            div.innerHTML = `<span class="text-gray-300 font-semibold mr-1">${user}:</span> ${text}`;
+            div.className = "bg-black/40 backdrop-blur-sm self-start rounded-xl px-2.5 py-1 text-xs max-w-[90%] border border-white/5 animate-slide-in";
+            div.innerHTML = `<span class="text-gray-400 font-semibold mr-1.5">${user}</span> <span class="text-white">${text}</span>`;
             
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            if (chatContainer.children.length > 30) {
+            if (chatContainer.children.length > 35) {
                 chatContainer.removeChild(chatContainer.children[0]);
             }
         }
 
-        // Sistema de Donaciones Automáticas
+        // Sistema de Donaciones Realista de TikTok (León, Ballena, Galaxia, etc.)
         const giftList = [
-            { name: "Rosa", icon: "🌹", color: "from-pink-500 to-red-500" },
-            { name: "TikTok", icon: "🎵", color: "from-cyan-500 to-blue-500" },
-            { name: "León", icon: "🦁", color: "from-yellow-500 to-orange-500" },
-            { name: "Anillo", icon: "💍", color: "from-purple-500 to-pink-500" }
+            { name: "Rosa", icon: "🌹", coins: "1", color: "from-pink-500 to-rose-600" },
+            { name: "GG", icon: "🎮", coins: "5", color: "from-indigo-500 to-purple-600" },
+            { name: "TikTok", icon: "🎵", coins: "1", color: "from-cyan-500 to-blue-600" },
+            { name: "Puntito Rojo", icon: "🔴", coins: "10", color: "from-red-500 to-pink-600" },
+            { name: "Gorra", icon: "🧢", coins: "99", color: "from-amber-500 to-orange-600" },
+            { name: "Anillo de Diamantes", icon: "💍", coins: "300", color: "from-purple-500 to-indigo-600" },
+            { name: "Galaxia", icon: "🌌", coins: "1,999", color: "from-purple-600 via-pink-600 to-blue-600" },
+            { name: "León", icon: "🦁", coins: "29,999", color: "from-yellow-500 via-orange-600 to-amber-700" },
+            { name: "Ballena", icon: "🐋", coins: "21,500", color: "from-blue-600 via-cyan-500 to-teal-600" }
         ];
+
+        let totalDiamonds = 12850;
+        const diamondCountElem = document.getElementById('diamondCount');
 
         function triggerGift() {
             const user = usernames[Math.floor(Math.random() * usernames.length)];
             const gift = giftList[Math.floor(Math.random() * giftList.length)];
             const giftContainer = document.getElementById('giftContainer');
 
+            // Sumar diamantes de forma realista
+            const coinNum = parseInt(gift.coins.replace(/,/g, ''));
+            totalDiamonds += coinNum;
+            diamondCountElem.innerText = totalDiamonds.toLocaleString();
+
             const gDiv = document.createElement('div');
-            gDiv.className = `flex items-center bg-gradient-to-r ${gift.color} p-1.5 rounded-full shadow-lg text-xs space-x-2 w-max animate-bounce`;
+            gDiv.className = `flex items-center bg-gradient-to-r ${gift.color} p-1.5 pr-4 rounded-full shadow-2xl text-xs space-x-2.5 w-max animate-gift border border-white/20`;
             gDiv.innerHTML = `
-                <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-black font-bold text-[10px]">
-                    <i class="fa-solid fa-user"></i>
+                <div class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-sm">
+                    <i class="fa-solid fa-user text-white text-xs"></i>
                 </div>
                 <div>
-                    <p class="font-bold text-white text-[10px]">${user}</p>
-                    <p class="text-[9px] text-white/90">Envío 1x ${gift.name} ${gift.icon}</p>
+                    <p class="font-bold text-white text-[11px] leading-tight">${user}</p>
+                    <p class="text-[10px] text-white/90 leading-tight">Envío ${gift.name} ${gift.icon} <span class="bg-black/30 px-1.5 py-0.2 rounded text-[9px] font-bold ml-1">x1</span></p>
                 </div>
             `;
 
             giftContainer.appendChild(gDiv);
-            setTimeout(() => { gDiv.remove(); }, 4000);
+            setTimeout(() => { gDiv.remove(); }, 4500);
         }
 
-        // Intervalos automáticos
-        setInterval(addComment, 2200);
+        // Intervalos de interacción automática idénticos a un directo real
+        setInterval(addComment, 1800);
         setInterval(() => {
-            if(Math.random() > 0.4) triggerGift();
-        }, 5000);
+            if(Math.random() > 0.3) triggerGift();
+        }, 4000);
         setInterval(() => {
-            currentViewers += Math.floor(Math.random() * 7) - 3;
+            currentViewers += Math.floor(Math.random() * 9) - 4;
             viewerCountElem.innerText = currentViewers.toLocaleString();
-        }, 3500);
+        }, 3000);
     </script>
 </body>
 </html>
