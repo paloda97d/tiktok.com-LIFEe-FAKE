@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TikTok Fake Live Studio</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Hide scrollbars for clean TikTok look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.6); opacity: 0; }
+            20% { opacity: 1; transform: translateY(-40px) scale(1.1); }
+            100% { transform: translateY(-280px) scale(1.3); opacity: 0; }
+        }
+
+        .floating-heart {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            animation: floatUp 1.8s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .gift-alert-anim {
+            animation: slideInLeft 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(254,44,85,0.6)); }
+            50% { transform: scale(1.12); filter: drop-shadow(0 0 15px rgba(254,44,85,0.9)); }
+        }
+
+        .pulse-gift {
+            animation: pulseGlow 0.8s infinite;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center bg-zinc-950">
+
+    <!-- Mobile Container (Simulates iPhone screen frame or full viewport on mobile) -->
+    <div id="app-container" class="relative w-full h-full max-w-md bg-black overflow-hidden flex flex-col justify-between shadow-2xl sm:rounded-3xl sm:h-[880px] sm:border-4 sm:border-zinc-800">
+
+        <!-- Background Video Layer -->
+        <div class="absolute inset-0 w-full h-full z-0 overflow-hidden bg-zinc-900">
+            <video id="live-video" class="w-full h-full object-cover" autoplay loop muted playsinline>
+                <!-- Default reliable looping video sample -->
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-girl-recording-herself-with-her-smartphone-42939-large.mp4" type="video/mp4">
+                Tu navegador no soporta videos.
+            </video>
+            <!-- Dark gradient overlay for UI readability -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70 pointer-events-none"></div>
+        </div>
+
+        <!-- TOP HEADER -->
+        <div class="relative z-20 flex items-center justify-between px-4 pt-4 pb-2 text-white">
+            <!-- Host Profile & Viewers Pill -->
+            <div class="flex items-center space-x-2 bg-black/40 backdrop-blur-md rounded-full py-1 px-2.5 border border-white/10">
+                <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500 p-0.5 flex items-center justify-center overflow-hidden">
+                    <img id="header-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" class="w-full h-full object-cover rounded-full" alt="Avatar">
+                </div>
+                <div class="flex flex-col">
+                    <span id="header-username" class="text-xs font-bold leading-none">@tucuenta_live</span>
+                    <span class="text-[9px] text-zinc-300 leading-tight">Seguir</span>
+                </div>
+                <button class="bg-[#FE2C55] text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-1">+ Seguir</button>
+            </div>
+
+            <!-- Viewers Count & Audio Pill -->
+            <div class="flex items-center space-x-2">
+                <div class="bg-black/40 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-1.5 border border-white/10 text-xs">
+                    <i class="fa-solid fa-user text-[#FE2C55]"></i>
+                    <span id="viewer-count" class="font-bold">1,240</span>
+                </div>
+                <!-- Settings Button -->
+                <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/10 active:scale-95 transition">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SUB-HEADER: LIVE Badge & Diamonds Counter -->
+        <div class="relative z-20 px-4 flex items-center justify-between pointer-events-none">
+            <div class="bg-[#FE2C55] text-white text-[10px] font-extrabold px-2 py-0.5 rounded tracking-wider shadow-md">
+                LIVE
+            </div>
+            <!-- Accumulated Diamonds / Coins -->
+            <div class="flex items-center space-x-1 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-yellow-500/30">
+                <span class="text-yellow-400 text-xs">💎</span>
+                <span id="total-diamonds" class="text-xs font-bold text-yellow-300">0</span>
+            </div>
+        </div>
+
+        <!-- GIFT ANIMATION ALERT CONTAINER (Top Center / Left) -->
+        <div id="gift-alerts-container" class="absolute top-28 left-4 z-30 flex flex-col space-y-2 pointer-events-none max-w-[260px]">
+            <!-- Dynamic gift banners appear here -->
+        </div>
+
+        <!-- MIDDLE / CHAT AREA (Tap anywhere on screen to send floating hearts) -->
+        <div id="tap-screen-area" class="relative z-10 flex-1 flex flex-col justify-end px-4 pb-2 overflow-hidden pointer-events-auto">
+            <!-- Chat Box -->
+            <div id="chat-container" class="w-full h-64 overflow-y-auto no-scrollbar flex flex-col space-y-2 mask-image mask-linear-gradient">
+                <!-- Welcome system message -->
+                <div class="bg-black/40 backdrop-blur-sm self-start px-3 py-1.5 rounded-xl text-xs text-zinc-300 border border-white/5">
+                    <span class="text-yellow-400 font-bold">TikTok Live:</span> ¡Bienvenido a tu transmisión! Los espectadores bots comenzarán a unirse al iniciar el live.
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM TOOLBAR -->
+        <div class="relative z-20 px-4 py-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center justify-between">
+            <!-- Left: Live Status Control / Start-Stop Button -->
+            <button id="toggle-live-btn" onclick="toggleLiveState()" class="flex items-center space-x-2 bg-[#FE2C55] hover:bg-[#e0244c] text-white px-4 py-2 rounded-full font-bold text-xs shadow-lg transition active:scale-95">
+                <span id="live-indicator-dot" class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+                <span id="live-btn-text">Finalizar Live</span>
+            </button>
+
+            <!-- Right: Interactive Action Buttons (Force Gift, Share, Comments) -->
+            <div class="flex items-center space-x-2">
+                <!-- Force Lion / Big Gift Button -->
+                <button onclick="triggerForcedGift()" class="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold text-xs px-3 py-2 rounded-full shadow-lg flex items-center space-x-1 active:scale-95 transition pulse-gift">
+                    <span>🦁</span>
+                    <span>Enviar León</span>
+                </button>
+                <!-- Add custom comment button -->
+                <button onclick="openCustomCommentModal()" class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition">
+                    <i class="fa-solid fa-comment-dots text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl text-white">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <h3 class="font-bold text-base flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-[#FE2C55]"></i>
+                    <span>Panel de Control Fake Live</span>
+                </h3>
+                <button onclick="toggleSettingsModal()" class="text-zinc-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Configuration Options -->
+            <div class="space-y-3 text-xs">
+                <!-- Username Config -->
+                <div>
+                    <label class="block text-zinc-400 mb-1">Tu Nombre de Usuario:</label>
+                    <input type="text" id="input-username" value="@tucuenta_live" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#FE2C55]">
+                </div>
+
+                <!-- Video Source Selector -->
+                <div>
+                    <label class="block text-zinc-400 mb-1">Cambiar Video de Fondo (Subir desde dispositivo o URL):</label>
+                    <input type="file" id="video-file-input" accept="video/*" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-zinc-300 text-[11px] file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-[#FE2C55] file:text-white file:font-bold">
+                </div>
+
+                <!-- Bot Chat Speed -->
+                <div>
+                    <label class="block text-zinc-400 mb-1">Velocidad de Mensajes (Bots):</label>
+                    <select id="chat-speed-select" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none">
+                        <option value="1500">Rápido (1.5 seg)</option>
+                        <option value="2500" selected>Normal (2.5 seg)</option>
+                        <option value="4500">Lento (4.5 seg)</option>
+                    </select>
+                </div>
+
+                <!-- Bot Gifts Frequency -->
+                <div>
+                    <label class="block text-zinc-400 mb-1">Frecuencia de Regalos Automáticos:</label>
+                    <select id="gift-speed-select" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none">
+                        <option value="6000">Constante (Cada 6s)</option>
+                        <option value="12000" selected>Equilibrio (Cada 12s)</option>
+                        <option value="25000">Tranquilo (Cada 25s)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <button onclick="applySettings()" class="w-full bg-[#FE2C55] hover:bg-[#e0244c] text-white font-bold py-2.5 rounded-xl transition shadow-lg mt-2">
+                Guardar y Aplicar
+            </button>
+        </div>
+    </div>
+
+    <!-- CUSTOM COMMENT MODAL -->
+    <div id="comment-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl text-white">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <h3 class="font-bold text-base">Enviar Comentario Manual</h3>
+                <button onclick="openCustomCommentModal()" class="text-zinc-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div>
+                <label class="block text-zinc-400 text-xs mb-1">Escribe como si fueras un espectador:</label>
+                <input type="text" id="custom-comment-text" placeholder="Ej: ¡Hola hermosa, saludos desde Argentina!" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-[#FE2C55]">
+            </div>
+            <button onclick="sendCustomComment()" class="w-full bg-[#FE2C55] hover:bg-[#e0244c] text-white font-bold py-2 rounded-xl text-xs transition shadow-lg">
+                Enviar Comentario
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data arrays for bot simulation
+        const botNames = [
+            "Carlos_Pro99", "Sofia_Gamer", "Alex_Vlog", "Mariana.fit", "Juancho_10", 
+            "Valentina_22", "Mateo_Skate", "Camila_Dance", "Lucas_Dev", "Daniela_M",
+            "Pedro_Picapiedra", "Lucia_B", "Diego_Rmz", "Fernanda_K", "Gabriel_99",
+            "Valu_Styles", "Nico_G", "Andrea_Styl", "Javi_Perez", "Sam_Official"
+        ];
+
+        const botMessages = [
+            "¡Holaaa hermosa!", "Qué lindo directo ❤️", "Saludos desde México!", 
+            "Jajaja me encantas 😂", "Te mandé una rosa 🌹", "Mucho éxito en tu live",
+            "¿De dónde eres?", "Hermosa sonrisa ✨", "Te ves increíble hoy",
+            "¡Hola desde Colombia! 🇨🇴", "Hola reinaaa", "Qué temazo de fondo",
+            "Primera vez que te veo en vivo 😍", "Mandame un saludo porfi", "Jajaja no te creo"
+        ];
+
+        const giftCatalog = [
+            { name: "Rosa", icon: "🌹", value: 1, color: "from-pink-500 to-rose-600" },
+            { name: "Gafas de sol", icon: "🕶️", value: 5, color: "from-blue-500 to-cyan-500" },
+            { name: "Corazón", icon: "❤️", value: 10, color: "from-red-500 to-pink-600" },
+            { name: "Anillo", icon: "💍", value: 50, color: "from-purple-500 to-indigo-600" },
+            { name: "Cohete", icon: "🚀", value: 100, color: "from-orange-500 to-amber-600" },
+            { name: "León", icon: "🦁", value: 500, color: "from-amber-600 to-yellow-500" }
+        ];
+
+        // State variables
+        let isLiveActive = true;
+        let totalDiamonds = 0;
+        let viewerCount = 1240;
+        let chatInterval = null;
+        let giftInterval = null;
+        let viewerFluctuationInterval = null;
+
+        let chatSpeed = 2500;
+        let giftSpeed = 12000;
+
+        // DOM Elements
+        const chatContainer = document.getElementById('chat-container');
+        const viewerCountElem = document.getElementById('viewer-count');
+        const diamondsElem = document.getElementById('total-diamonds');
+        const giftAlertsContainer = document.getElementById('gift-alerts-container');
+        const toggleLiveBtn = document.getElementById('toggle-live-btn');
+        const liveIndicatorDot = document.getElementById('live-indicator-dot');
+        const liveBtnText = document.getElementById('live-btn-text');
+        const tapScreenArea = document.getElementById('tap-screen-area');
+        const videoElement = document.getElementById('live-video');
+
+        // Initialize simulation on load
+        window.onload = function() {
+            startSimulationLoops();
+            setupScreenTapListeners();
+            setupVideoUploader();
+        };
+
+        function startSimulationLoops() {
+            // Chat loop
+            chatInterval = setInterval(() => {
+                if (!isLiveActive) return;
+                addBotChatMessage();
+            }, chatSpeed);
+
+            // Gift loop
+            giftInterval = setInterval(() => {
+                if (!isLiveActive) return;
+                triggerRandomBotGift();
+            }, giftSpeed);
+
+            // Viewer fluctuation loop
+            viewerFluctuationInterval = setInterval(() => {
+                if (!isLiveActive) return;
+                const change = Math.floor(Math.random() * 25) - 10;
+                viewerCount = Math.max(800, viewerCount + change);
+                viewerCountElem.innerText = viewerCount.toLocaleString();
+            }, 4000);
+        }
+
+        // Add automated chat message from bot
+        function addBotChatMessage(username = null, text = null) {
+            const user = username || botNames[Math.floor(Math.random() * botNames.length)];
+            const msg = text || botMessages[Math.floor(Math.random() * botMessages.length)];
+
+            const chatItem = document.createElement('div');
+            chatItem.className = "flex items-start space-x-1.5 text-xs bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-xl max-w-[90%] animate-fade-in border border-white/5";
+            chatItem.innerHTML = `
+                <span class="font-bold text-zinc-300">${user}:</span>
+                <span class="text-white break-words">${msg}</span>
+            `;
+            chatContainer.appendChild(chatItem);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Keep only last 40 messages to prevent memory buildup
+            if (chatContainer.children.length > 40) {
+                chatContainer.removeChild(chatContainer.children[0]);
+            }
+        }
+
+        // Trigger random gift from bot
+        function triggerRandomBotGift(forcedGift = null) {
+            const user = botNames[Math.floor(Math.random() * botNames.length)];
+            const gift = forcedGift || giftCatalog[Math.floor(Math.random() * giftCatalog.length)];
+
+            // Update diamonds
+            totalDiamonds += gift.value;
+            diamondsElem.innerText = totalDiamonds.toLocaleString();
+
+            // Display floating gift alert banner
+            showGiftAlert(user, gift);
+
+            // Also post a chat notification about the gift
+            addBotChatMessage("Sistema de Regalos", `🎁 ¡${user} envió ${gift.icon} ${gift.name}!`);
+        }
+
+        // Show animated gift alert banner on left
+        function showGiftAlert(user, gift) {
+            const alertElem = document.createElement('div');
+            alertElem.className = `gift-alert-anim flex items-center space-x-3 bg-gradient-to-r ${gift.color} p-2 rounded-2xl shadow-xl text-white border border-white/20`;
+            alertElem.innerHTML = `
+                <div class="w-10 h-10 rounded-full bg-black/30 flex items-center justify-center text-xl shadow-inner">
+                    ${gift.icon}
+                </div>
+                <div class="flex flex-col pr-2">
+                    <span class="font-extrabold text-xs leading-tight">${user}</span>
+                    <span class="text-[10px] text-white/90">Envió 1x ${gift.name}</span>
+                </div>
+            `;
+            giftAlertsContainer.appendChild(alertElem);
+
+            // Remove banner after 3.5 seconds
+            setTimeout(() => {
+                alertElem.style.opacity = '0';
+                alertElem.style.transform = 'translateX(-20px)';
+                alertElem.style.transition = 'all 0.3s ease';
+                setTimeout(() => alertElem.remove(), 300);
+            }, 3500);
+        }
+
+        function setupScreenTapListeners() {
+            tapScreenArea.addEventListener('click', (e) => {
+                // Ignore if clicked on settings or buttons
+                if (e.target.closest('button') || e.target.closest('input')) return;
+
+                // Create floating heart on tap position
+                const heart = document.createElement('div');
+                heart.className = 'floating-heart text-2xl';
+                const heartsList = ['❤️', '💖', '✨', '🩷', '🌹'];
+                heart.innerText = heartsList[Math.floor(Math.random() * heartsList.length)];
+                
+                const rect = tapScreenArea.getBoundingClientRect();
+                const x = e.clientX - rect.left - 15;
+                heart.style.left = `${Math.max(10, Math.min(rect.width - 40, x))}px`;
+                
+                tapScreenArea.appendChild(heart);
+                setTimeout(() => heart.remove(), 1800);
+            });
+        }
+
+        function toggleLiveState() {
+            isLiveActive = !isLiveActive;
+            if (isLiveActive) {
+                toggleLiveBtn.className = "flex items-center space-x-2 bg-[#FE2C55] hover:bg-[#e0244c] text-white px-4 py-2 rounded-full font-bold text-xs shadow-lg transition active:scale-95";
+                liveIndicatorDot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
+                liveBtnText.innerText = "Finalizar Live";
+                addBotChatMessage("Sistema", "¡Has reanudado la transmisión!");
+            } else {
+                toggleLiveBtn.className = "flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full font-bold text-xs shadow-lg transition active:scale-95";
+                liveIndicatorDot.className = "w-2.5 h-2.5 rounded-full bg-white";
+                liveBtnText.innerText = "Iniciar Live";
+                addBotChatMessage("Sistema", "¡Transmisión pausada!");
+            }
+        }
+
+        function triggerForcedGift() {
+            // Force the biggest gift (Lion)
+            const lionGift = giftCatalog.find(g => g.name === "León");
+            triggerRandomBotGift(lionGift);
+        }
+
+        function toggleSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function openCustomCommentModal() {
+            const modal = document.getElementById('comment-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function sendCustomComment() {
+            const input = document.getElementById('custom-comment-text');
+            const customText = input.value.trim();
+            const username = document.getElementById('input-username').value || "@tucuenta_live";
+
+            if (customText) {
+                // Post as host or featured comment
+                addBotChatMessage("Tú (" + username.replace('@','') + ")", customText);
+                input.value = '';
+                openCustomCommentModal();
+            }
+        }
+
+        function applySettings() {
+            const newUsername = document.getElementById('input-username').value;
+            if (newUsername) {
+                document.getElementById('header-username').innerText = newUsername;
+            }
+
+            chatSpeed = parseInt(document.getElementById('chat-speed-select').value);
+            giftSpeed = parseInt(document.getElementById('gift-speed-select').value);
+
+            // Restart intervals with new speeds
+            clearInterval(chatInterval);
+            clearInterval(giftInterval);
+
+            chatInterval = setInterval(() => {
+                if (!isLiveActive) return;
+                addBotChatMessage();
+            }, chatSpeed);
+
+            giftInterval = setInterval(() => {
+                if (!isLiveActive) return;
+                triggerRandomBotGift();
+            }, giftSpeed);
+
+            toggleSettingsModal();
+        }
+
+        // Video file uploader handler
+        function setupVideoUploader() {
+            const fileInput = document.getElementById('video-file-input');
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const videoURL = URL.createObjectURL(file);
+                    videoElement.src = videoURL;
+                    videoElement.load();
+                    videoElement.play();
+                    toggleSettingsModal();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
