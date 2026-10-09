@@ -19,16 +19,29 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     @keyframes slideIn {
-        from { opacity: 0; transform: translateY(15px); }
+        from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    .animate-slide-in { animation: slideIn 0.25s ease-out forwards; }
-    @keyframes giftPopup {
-        0% { transform: scale(0.5); opacity: 0; }
-        60% { transform: scale(1.05); opacity: 1; }
+    .animate-slide-in { animation: slideIn 0.2s ease-out forwards; }
+    
+    @keyframes floatUp {
+        0% { transform: translateY(0px) scale(0.6); opacity: 0; }
+        20% { opacity: 1; transform: translateY(-40px) scale(1.1); }
+        100% { transform: translateY(-280px) scale(1.3); opacity: 0; }
+    }
+    .floating-heart {
+        position: absolute;
+        bottom: 70px;
+        right: 20px;
+        animation: floatUp 2.2s ease-out forwards;
+        pointer-events: none;
+    }
+    @keyframes giftPop {
+        0% { transform: scale(0.6); opacity: 0; }
+        70% { transform: scale(1.05); opacity: 1; }
         100% { transform: scale(1); opacity: 1; }
     }
-    .animate-gift { animation: giftPopup 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .animate-gift { animation: giftPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards; }
 </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between relative overflow-hidden bg-black">
@@ -38,76 +51,101 @@
         <video id="cameraStream" autoplay playsinline muted class="h-full w-full object-cover transform -scale-x-100"></video>
     </div>
 
-    <!-- Interfaz Superior (Perfil, Diamantes y Espectadores estilo TikTok) -->
-    <div class="relative z-10 pt-10 px-3 flex justify-between items-center bg-gradient-to-b from-black/80 via-black/30 to-transparent pb-4">
-        <!-- Izquierda: Perfil y Seguir -->
-        <div class="flex items-center bg-black/40 backdrop-blur-md rounded-full p-1 pr-3 border border-white/10 space-x-2">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500 p-0.5 flex items-center justify-center overflow-hidden">
-                <div class="w-full h-full bg-black rounded-full flex items-center justify-center text-xs font-bold">
-                    <i class="fa-solid fa-user text-white text-[10px]"></i>
+    <!-- Barra Superior Exacta TikTok -->
+    <div class="relative z-10 pt-12 px-3 flex justify-between items-center bg-gradient-to-b from-black/70 via-black/20 to-transparent pb-3">
+        <!-- Izquierda: Perfil, Nombre, Diamantes y Botón Unirse -->
+        <div class="flex items-center space-x-2">
+            <div class="flex items-center bg-black/40 backdrop-blur-md rounded-full p-1 pr-3 border border-white/10 space-x-2">
+                <div class="w-8 h-8 rounded-full overflow-hidden border border-white/20">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" class="w-full h-full object-cover" alt="Avatar">
+                </div>
+                <div class="text-xs">
+                    <div class="flex items-center space-x-1">
+                        <span class="font-bold text-white">Yanina</span>
+                        <span class="text-xs">🍭</span>
+                    </div>
+                    <div class="flex items-center text-[10px] text-gray-300">
+                        <i class="fa-solid fa-heart text-pink-500 text-[8px] mr-0.5"></i> 129.6K
+                    </div>
                 </div>
             </div>
-            <div class="text-xs">
-                <p class="font-bold text-white leading-tight">Tu_Usuario</p>
-                <p class="text-[10px] text-gray-300 leading-tight">1.2M</p>
-            </div>
-            <button class="bg-[#fe2c55] text-white text-[11px] font-bold px-2.5 py-1 rounded-full ml-1">Seguir</button>
+            <!-- Botón Naranja Unirse -->
+            <button class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md flex items-center space-x-1">
+                <i class="fa-solid fa-user-plus text-[10px]"></i>
+                <span>Unirse</span>
+            </button>
         </div>
 
-        <!-- Derecha: Espectadores y Botón Salir -->
+        <!-- Derecha: Avatares espectadores, contador y X -->
         <div class="flex items-center space-x-2">
-            <!-- Espectadores en línea -->
-            <div class="flex items-center space-x-1 bg-black/40 backdrop-blur-md rounded-full px-3 py-1 border border-white/10 text-xs">
-                <div class="flex -space-x-1.5 overflow-hidden mr-1">
-                    <div class="inline-block h-4 w-4 rounded-full ring-2 ring-black bg-pink-500 text-[8px] flex items-center justify-center font-bold">A</div>
-                    <div class="inline-block h-4 w-4 rounded-full ring-2 ring-black bg-blue-500 text-[8px] flex items-center justify-center font-bold">J</div>
+            <div class="flex items-center bg-black/40 backdrop-blur-md rounded-full px-2.5 py-1 border border-white/10 text-xs space-x-1.5">
+                <div class="flex -space-x-2 overflow-hidden">
+                    <div class="inline-block h-4 w-4 rounded-full ring-1 ring-black bg-purple-500 text-[8px] flex items-center justify-center font-bold">👤</div>
+                    <div class="inline-block h-4 w-4 rounded-full ring-1 ring-black bg-blue-500 text-[8px] flex items-center justify-center font-bold">👤</div>
                 </div>
-                <span id="viewerCount" class="font-semibold">1,425</span>
+                <span id="viewerCount" class="font-semibold text-xs">71</span>
             </div>
-            <!-- Botón cerrar (X) -->
-            <button onclick="location.reload()" class="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white text-xs">
+            <button onclick="location.reload()" class="w-7 h-7 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white text-xs">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
     </div>
 
-    <!-- Barra de Diamantes / Ranking Superior (Bajo el perfil) -->
+    <!-- Segunda Barra Superior (Liga y Rangos) -->
     <div class="relative z-10 px-3 flex items-center space-x-2">
-        <div class="bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-2.5 py-0.5 text-[11px] flex items-center space-x-1 text-yellow-400 font-bold">
-            <i class="fa-solid fa-gem text-xs"></i>
-            <span id="diamondCount">12,850</span>
+        <div class="bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-2.5 py-0.5 text-[11px] flex items-center space-x-1 text-gray-200">
+            <span class="text-blue-400 font-bold">◆ Liga B1</span>
+            <span class="text-gray-400">nro. 10</span>
         </div>
         <div class="bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-2.5 py-0.5 text-[11px] text-gray-200 flex items-center space-x-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-            <span>TOP 4</span>
+            <span>🏆</span>
+            <span class="font-bold text-purple-300">0/1</span>
+        </div>
+        <div class="bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-2 py-0.5 text-[11px] text-gray-200 flex items-center space-x-1">
+            <span>Hall of Glory</span>
+            <span class="text-xs">👑</span>
         </div>
     </div>
 
-    <!-- Contenedor de Regalos Grandes / Animaciones en Vivo (Centro-Izquierda) -->
-    <div id="giftContainer" class="absolute top-36 left-3 z-20 space-y-2.5 pointer-events-none w-72"></div>
+    <!-- Contenedor de Regalos Animados (Lado Izquierdo) -->
+    <div id="giftContainer" class="absolute top-36 left-3 z-20 space-y-2 pointer-events-none w-72"></div>
 
-    <!-- Interfaz Inferior (Chat Estilo TikTok con Comentarios y Emojis) -->
-    <div class="relative z-10 p-3 flex flex-col space-y-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent pb-6">
-        <!-- Chat flotante -->
-        <div id="chatContainer" class="h-52 overflow-y-auto no-scrollbar flex flex-col space-y-2 mask-image">
-            <div class="bg-black/40 backdrop-blur-sm self-start rounded-xl px-2.5 py-1 text-xs max-w-[90%] border border-white/5">
-                <span class="text-yellow-400 font-semibold">TikTok Live:</span> ¡Bienvenido a tu transmisión! Los espectadores comenzaron a unirse. 🔴
+    <!-- Contenedor de Corazones Flotantes (Lado Derecho Inferior) -->
+    <div id="heartsContainer" class="absolute inset-0 z-10 pointer-events-none overflow-hidden"></div>
+
+    <!-- Interfaz Inferior (Chat Estilo TikTok Real + Barra de Comentarios) -->
+    <div class="relative z-10 p-3 flex flex-col space-y-2.5 bg-gradient-to-t from-black/90 via-black/40 to-transparent pb-6">
+        <!-- Chat Flotante -->
+        <div id="chatContainer" class="h-48 overflow-y-auto no-scrollbar flex flex-col space-y-2">
+            <div class="bg-black/30 backdrop-blur-sm self-start rounded-xl px-2.5 py-1 text-xs max-w-[90%] border border-white/5">
+                <span class="text-blue-300 font-semibold mr-1">◆ 26 Javi se unió</span>
             </div>
         </div>
 
-        <!-- Barra de Controles Inferior (Comentar, Regalos, Multiguest, etc.) -->
+        <!-- Barra de Escribir y Botones Inferiores -->
         <div class="flex items-center space-x-2 pt-1">
             <div class="bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex-1 px-4 py-2.5 text-xs text-gray-300 flex items-center justify-between">
-                <span class="text-gray-400">Añade un comentario...</span>
-                <i class="fa-regular fa-face-smile text-gray-300 text-sm"></i>
+                <span class="text-gray-400">Escribe algo...</span>
             </div>
-            <!-- Botón Multiguest / Efectos -->
-            <button class="bg-black/60 backdrop-blur-md border border-white/10 text-white w-10 h-10 rounded-full flex items-center justify-center text-sm shadow-md">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <!-- Botón Emoji -->
+            <button class="bg-black/60 backdrop-blur-md border border-white/10 text-white w-10 h-10 rounded-full flex items-center justify-center text-sm">
+                <i class="fa-regular fa-face-smile"></i>
             </button>
-            <!-- Botón de Regalos (Caja sorpresas TikTok) -->
-            <button onclick="triggerGift()" class="bg-gradient-to-tr from-pink-600 via-purple-600 to-indigo-600 text-white w-11 h-11 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
-                <i class="fa-solid fa-gift text-base"></i>
+            <!-- Botón Multiguest (Usuarios) -->
+            <button class="bg-black/60 backdrop-blur-md border border-white/10 text-white w-10 h-10 rounded-full flex items-center justify-center text-sm">
+                <i class="fa-solid fa-users text-pink-500"></i>
+            </button>
+            <!-- Botón Rosa -->
+            <button class="bg-black/60 backdrop-blur-md border border-white/10 text-white w-10 h-10 rounded-full flex items-center justify-center text-sm">
+                <span class="text-base">🌹</span>
+            </button>
+            <!-- Botón Regalo -->
+            <button onclick="triggerGift()" class="bg-gradient-to-tr from-pink-600 to-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
+                <i class="fa-solid fa-gift text-sm"></i>
+            </button>
+            <!-- Botón Compartir / Corazón Lateral -->
+            <button onclick="sendHeart()" class="bg-gradient-to-tr from-red-600 to-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
+                <i class="fa-solid fa-heart text-sm"></i>
             </button>
         </div>
     </div>
@@ -128,71 +166,86 @@
         }
         initCamera();
 
-        // Datos realistas de espectadores de TikTok (Comentarios cortos y emojis)
+        // Datos realistas para simular comunidad de TikTok
         const usernames = [
-            "carlos_fx", "andrea_beauty", "pedro.picapiedra", "juancho_10", 
-            "sofia_fit", "mauricio_99", "vale_cat", "rorro_x", "claudia_chile", 
-            "ignacio_sk8", "stefany_94", "pancho_villa", "tania_oficial", "gonzalo_pro"
+            "user1419577725985", "el fantástico", "Horacio adrian Lopez quiroz", 
+            "FUSER", "Javi", "carlos_fx", "andrea_beauty", "pedro.picapiedra", 
+            "juancho_10", "sofia_fit", "rorro_x", "claudia_chile", "ignacio_sk8"
         ];
         
         const comments = [
-            "Holaa! hermosa 😍", "Jajaja csm 😂", "Saludos desde Maipú!", "Hermoso bro 🔥", 
-            "10/10", "A darle con todo 💪", "Me encantas ❤️", "Holaa wapa 👋", 
-            "Wenaa sipo ✨", "🔥🔥🔥", "Jajaja wena", "Tremendo directo 👏", 
-            "Saludos desde Stgo", "😍😍", "Jajaja wtf 😂", "Salu2 rey 👑"
+            "Hola", "bandido de Ana Barbara cumbia", "roxett habla el corazón esa canción", 
+            "Jajaja csm 😂", "Saludos desde Maipú!", "Hermoso bro 🔥", "10/10", 
+            "A darle con todo 💪", "Me encantas ❤️", "Holaa wapa 👋", "Wenaa sipo ✨", 
+            "🔥🔥🔥", "Jajaja wena", "Tremendo directo 👏", "😍😍", "Salu2 rey 👑"
         ];
 
         const chatContainer = document.getElementById('chatContainer');
         const viewerCountElem = document.getElementById('viewerCount');
-        let currentViewers = 1425;
+        let currentViewers = 71;
 
         function addComment() {
             const user = usernames[Math.floor(Math.random() * usernames.length)];
-            const text = comments[Math.floor(Math.random() * comments.length)];
+            const isJoin = Math.random() < 0.25;
             
             const div = document.createElement('div');
-            div.className = "bg-black/40 backdrop-blur-sm self-start rounded-xl px-2.5 py-1 text-xs max-w-[90%] border border-white/5 animate-slide-in";
-            div.innerHTML = `<span class="text-gray-400 font-semibold mr-1.5">${user}</span> <span class="text-white">${text}</span>`;
+            div.className = "bg-black/30 backdrop-blur-sm self-start rounded-xl px-2.5 py-1.5 text-xs max-w-[90%] border border-white/5 animate-slide-in flex flex-col";
+            
+            if (isJoin) {
+                const level = Math.floor(Math.random() * 30) + 1;
+                div.innerHTML = `<span class="text-blue-300 font-semibold">◆ ${level} ${user} se unió</span>`;
+            } else {
+                const text = comments[Math.floor(Math.random() * comments.length)];
+                const hasLevel = Math.random() < 0.4;
+                const levelBadge = hasLevel ? `<span class="bg-blue-600 text-white px-1 rounded text-[9px] font-bold mr-1">◆ ${Math.floor(Math.random() * 25) + 1}</span>` : '';
+                
+                div.innerHTML = `
+                    <span class="text-gray-400 font-medium text-[11px] mb-0.5 flex items-center">${levelBadge}${user}</span>
+                    <span class="text-white text-xs">${text}</span>
+                `;
+            }
             
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            if (chatContainer.children.length > 35) {
+            if (chatContainer.children.length > 30) {
                 chatContainer.removeChild(chatContainer.children[0]);
             }
         }
 
-        // Sistema de Donaciones Realista de TikTok (León, Ballena, Galaxia, etc.)
-        const giftList = [
-            { name: "Rosa", icon: "🌹", coins: "1", color: "from-pink-500 to-rose-600" },
-            { name: "GG", icon: "🎮", coins: "5", color: "from-indigo-500 to-purple-600" },
-            { name: "TikTok", icon: "🎵", coins: "1", color: "from-cyan-500 to-blue-600" },
-            { name: "Puntito Rojo", icon: "🔴", coins: "10", color: "from-red-500 to-pink-600" },
-            { name: "Gorra", icon: "🧢", coins: "99", color: "from-amber-500 to-orange-600" },
-            { name: "Anillo de Diamantes", icon: "💍", coins: "300", color: "from-purple-500 to-indigo-600" },
-            { name: "Galaxia", icon: "🌌", coins: "1,999", color: "from-purple-600 via-pink-600 to-blue-600" },
-            { name: "León", icon: "🦁", coins: "29,999", color: "from-yellow-500 via-orange-600 to-amber-700" },
-            { name: "Ballena", icon: "🐋", coins: "21,500", color: "from-blue-600 via-cyan-500 to-teal-600" }
-        ];
+        // Animación de corazones flotantes al lado derecho (como los likes del Live)
+        function sendHeart() {
+            const heartsContainer = document.getElementById('heartsContainer');
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart text-red-500 text-2xl';
+            const icons = ['❤️', '💖', '💗', '❤️‍🔥'];
+            heart.innerHTML = icons[Math.floor(Math.random() * icons.length)];
+            heart.style.right = (Math.random() * 40 + 10) + 'px';
+            heartsContainer.appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 2200);
+        }
 
-        let totalDiamonds = 12850;
-        const diamondCountElem = document.getElementById('diamondCount');
+        // Sistema de Regalos Realista de TikTok (Rosa, Galaxia, León, Ballena)
+        const giftList = [
+            { name: "Rosa", icon: "🌹", color: "from-pink-500 to-rose-600" },
+            { name: "GG", icon: "🎮", color: "from-indigo-500 to-purple-600" },
+            { name: "TikTok", icon: "🎵", color: "from-cyan-500 to-blue-600" },
+            { name: "Anillo", icon: "💍", color: "from-purple-500 to-indigo-600" },
+            { name: "Galaxia", icon: "🌌", color: "from-purple-600 via-pink-600 to-blue-600" },
+            { name: "León", icon: "🦁", color: "from-yellow-500 via-orange-600 to-amber-700" },
+            { name: "Ballena", icon: "🐋", color: "from-blue-600 via-cyan-500 to-teal-600" }
+        ];
 
         function triggerGift() {
             const user = usernames[Math.floor(Math.random() * usernames.length)];
             const gift = giftList[Math.floor(Math.random() * giftList.length)];
             const giftContainer = document.getElementById('giftContainer');
 
-            // Sumar diamantes de forma realista
-            const coinNum = parseInt(gift.coins.replace(/,/g, ''));
-            totalDiamonds += coinNum;
-            diamondCountElem.innerText = totalDiamonds.toLocaleString();
-
             const gDiv = document.createElement('div');
             gDiv.className = `flex items-center bg-gradient-to-r ${gift.color} p-1.5 pr-4 rounded-full shadow-2xl text-xs space-x-2.5 w-max animate-gift border border-white/20`;
             gDiv.innerHTML = `
                 <div class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-sm">
-                    <i class="fa-solid fa-user text-white text-xs"></i>
+                    👤
                 </div>
                 <div>
                     <p class="font-bold text-white text-[11px] leading-tight">${user}</p>
@@ -202,17 +255,22 @@
 
             giftContainer.appendChild(gDiv);
             setTimeout(() => { gDiv.remove(); }, 4500);
+            sendHeart();
         }
 
-        // Intervalos de interacción automática idénticos a un directo real
-        setInterval(addComment, 1800);
+        // Intervalos automáticos realistas
+        setInterval(addComment, 1900);
         setInterval(() => {
-            if(Math.random() > 0.3) triggerGift();
-        }, 4000);
+            if(Math.random() > 0.35) triggerGift();
+        }, 4200);
         setInterval(() => {
-            currentViewers += Math.floor(Math.random() * 9) - 4;
-            viewerCountElem.innerText = currentViewers.toLocaleString();
-        }, 3000);
+            if(Math.random() > 0.5) sendHeart();
+        }, 1200);
+        setInterval(() => {
+            currentViewers += Math.floor(Math.random() * 5) - 2;
+            if(currentViewers < 50) currentViewers = 68;
+            viewerCountElem.innerText = currentViewers;
+        }, 3500);
     </script>
 </body>
 </html>
